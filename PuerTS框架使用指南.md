@@ -80,7 +80,7 @@ PuertsModule.cpp:
 ![](./Resources/genuedts.png)
 
 
-### Typescript工程编译
+ ### TypeScript工程编译
 
  #### 第一种方式：在项目设置的Puerts中启用Puerts插件自带的编译脚本，通过V8虚拟机执行编译，并且在UE编辑器运行期间会对Typescript目录进行监听，一旦有文件修改便会自动进行编译。如下图所示：
 ![](./Resources/puertsautocompile.png)
@@ -224,6 +224,47 @@ import "./Blueprints/BP_PlayerController";
 
 ### 6.VSCode配合使用
 
+#### 工作区搭建：
+
+首先先新建工作区并保存：
+![alt text](./Resources/workspace_0.png)
+![alt text](./Resources/workspace_1.png)
+
+编写settings.json，排除不用的文件和文件夹：
+![alt text](./Resources/workspace_2.png)
+```json
+{
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+     },
+     "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.vs": true,
+        "**/Binaries": true,
+        "**/Config": true, 
+        "**/Content": true,
+        "**/DerivedDataCache": true,
+        "**/Intermediate": true,
+        "**/Plugins": true,
+        "**/Saved": true,
+        "**/Builds": true,
+
+        "**/.vsconfig": true,
+        "**/*.uproject": true,
+        "**/*.sln": true,
+
+        "**/*.bat": true,
+        "**/Python": true,
+        "**/Source": true,
+
+        "**/tsconfig.json" : true,
+        "**/ts_file_versions_info.json" : true,
+    }
+}
+```
+
 #### 调试：
 
 * JavaScript and TypeScript Nightly
@@ -237,6 +278,7 @@ import "./Blueprints/BP_PlayerController";
 ![](./Resources/nodejsplug.png)
 
 配置debug环境：
+
 ![](./Resources/vscdbg_1.png)
 ![](./Resources/vscdbg_2.png)
 ![](./Resources/vscdbg_3.png)
@@ -287,3 +329,18 @@ launch.json生成如下,注意端口号要匹配且不能被其他进程占用:
 
 #### 修改了暴露给TS使用的蓝图或C++一定要按导出按钮重新导出ue.d.ts，否则属性或方法会不同步导致调用错误。
 ![](./Resources/tscppmodify.png)
+
+
+#### Typescript中int64的写法如下：
+![alt text](./Resources/tstip.png)
+
+#### puerts中UE数组的写法如下：
+![alt text](./Resources/tstip-1.png)
+
+#### puerts中获取结构体引用的写法如下：
+![alt text](./Resources/tstip-2.png)
+
+#### puerts中变量声明时如果直接赋值实例，可以省略冒号类型声明，这样变量类型也是自动识别的：
+![alt text](./Resources/tstip-3.png)
+
+#### 派生结构体在puerts中只支持向上转换，不支持向下转换。
