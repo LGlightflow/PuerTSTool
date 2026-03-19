@@ -19,7 +19,12 @@
 			"Name": "PuerTSTool",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
-		}
+		},
+		{
+			"Name": "PuerTSToolEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
 	],
 	"Plugins": [
 		{
