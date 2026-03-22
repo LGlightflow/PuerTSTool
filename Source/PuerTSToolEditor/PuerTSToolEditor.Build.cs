@@ -26,6 +26,7 @@ public class PuerTSToolEditor : ModuleRules
 			new string[]
 			{
 				"Core",
+				"UnrealEd"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -38,6 +39,7 @@ public class PuerTSToolEditor : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"Projects"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
