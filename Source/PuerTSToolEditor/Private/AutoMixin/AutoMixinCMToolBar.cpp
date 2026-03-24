@@ -2,7 +2,7 @@
 
 #include "ContentBrowserDelegates.h"
 #include "ContentBrowserModule.h"
-#include "AutoMixin/AutoMixinStyle.h"
+#include "PuerTSToolStyle.h"
 
 #define LOCTEXT_NAMESPACE "FPuerTSToolEditorModule"
 
@@ -38,7 +38,7 @@ void FAutoMixinCMToolBar::RegisterContextMenuButton() const
 				MenuBuilder.AddMenuEntry(
 					LOCTEXT("GenerateTSFile", "创建TS文件"), // 菜单文本
 					LOCTEXT("GenerateTSFileTooltip", "生成TypeScript文件"), // 提示信息
-					FSlateIcon(FAutoMixinStyle::GetStyleSetName(), "AutoMixinIcon"), // 使用自定义图标
+					FSlateIcon(FPuerTSToolStyle::GetStyleSetName(), "AutoMixinIcon"), // 使用自定义图标
 					FUIAction(
 						FExecuteAction::CreateLambda([this, SelectedAssets]()
 						{

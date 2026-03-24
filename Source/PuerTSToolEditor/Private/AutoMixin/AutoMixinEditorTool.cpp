@@ -1,6 +1,6 @@
 #include "AutoMixin/AutoMixinEditorTool.h"
-#include "AutoMixin/AutoMixinCommands.h"
-#include "AutoMixin/AutoMixinStyle.h"
+#include "PuerTSToolCommands.h"
+#include "PuerTSToolStyle.h"
 #include "Engine/Blueprint.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -9,6 +9,7 @@
 #include "Misc/MessageDialog.h"
 #include "UObject/Package.h"
 #include "Editor.h"
+#include "PuerTSToolSettings.h"
 #include "Interfaces/IPluginManager.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Styling/SlateStyleRegistry.h"
@@ -17,12 +18,6 @@
 
 #define LOCTEXT_NAMESPACE "FPuerTSToolEditorModule"
 
-// 常量定义
-static const FString TEMPLATE_NAME = TEXT("MixinTemplate.ts"); // 模板文件名
-static const FString TYPE_SCRIPT_DIR = TEXT("TypeScript"); // TypeScript文件夹
-static const FString PUERTS_FRAMEWORK_PATH = TEXT("PuerTSTool/Resources"); // Puerts资源路径
-
-static const FString AUTO_IMPORT_NAME = TEXT("PreMixin.ts"); // 自动导入文件名
 
 FAutoMixinEditorTool::FAutoMixinEditorTool()
 {
@@ -40,9 +35,13 @@ void FAutoMixinEditorTool::BindCommands()
 {
 }
 
+
+
 void FAutoMixinEditorTool::GenerateTS(const UBlueprint * Blueprint)
 {
-    	if (Blueprint)
+	const UPuerTSToolSettings* Settings = GetDefault<UPuerTSToolSettings>();
+	
+	if (Blueprint)
 	{
 		// 获取蓝图的路径名称
 		const FString BlueprintPath = Blueprint->GetPathName();
@@ -71,13 +70,13 @@ void FAutoMixinEditorTool::GenerateTS(const UBlueprint * Blueprint)
 			const FString FileName = StringArray[StringArray.Num() - 1];
 
 			// 读取模板文件
-			const FString TemplatePath = FPaths::Combine(FPaths::ProjectPluginsDir(), PUERTS_FRAMEWORK_PATH, TEMPLATE_NAME);
+			const FString TemplatePath = FPaths::Combine(FPaths::ProjectPluginsDir(), Settings->PuertsFrameworkPath,Settings->TemplateDir, Settings->TemplateName);
 			FString TemplateContent;
 			if (FFileHelper::LoadFileToString(TemplateContent, *TemplatePath))
 			{
 
 
-				const FString TypeScriptRootPath = FPaths::Combine(FPaths::ProjectDir(), TYPE_SCRIPT_DIR);
+				const FString TypeScriptRootPath = FPaths::Combine(FPaths::ProjectDir(), Settings->TypeScriptDir);
 				const FString TsFileDir = FPaths::GetPath(TsFilePath);
 				
 				// 计算从TS文件目录到TypeScript根目录的相对路径
@@ -113,20 +112,20 @@ void FAutoMixinEditorTool::GenerateTS(const UBlueprint * Blueprint)
 					Info.ExpireDuration = 5.f;
 					FSlateNotificationManager::Get().AddNotification(Info);
 
-					// 更新AutoImport.ts文件
-					const FString AutoImportTsPath = FPaths::Combine(FPaths::ProjectDir(), TYPE_SCRIPT_DIR, AUTO_IMPORT_NAME);
-					FString AutoImportTsContent;
+					// 更新premixin文件
+					const FString ImportMixinTs = FPaths::Combine(FPaths::ProjectDir(), Settings->TypeScriptDir, Settings->ImportMixinFileName);
+					FString ImportMixinTsContent;
 
 					// 读取现有内容
-					if (FFileHelper::LoadFileToString(AutoImportTsContent, *AutoImportTsPath))
+					if (FFileHelper::LoadFileToString(ImportMixinTsContent, *ImportMixinTs))
 					{
 						// 确保没有重复的导入语句
 						const FString ImportStatement = TEXT("import \"./") + ActualPath.Mid(1) + "\";";
-						if (!AutoImportTsContent.Contains(ImportStatement))
+						if (!ImportMixinTsContent.Contains(ImportStatement))
 						{
-							AutoImportTsContent += ImportStatement + TEXT("\n");
-							FFileHelper::SaveStringToFile(AutoImportTsContent, *AutoImportTsPath, FFileHelper::EEncodingOptions::ForceUTF8);
-							UE_LOG(LogTemp, Log, TEXT("AutoImport.ts更新成功"));
+							ImportMixinTsContent += ImportStatement + TEXT("\n");
+							FFileHelper::SaveStringToFile(ImportMixinTsContent, *ImportMixinTs, FFileHelper::EEncodingOptions::ForceUTF8);
+							UE_LOG(LogTemp, Log, TEXT("Premixin.ts更新成功"));
 						}
 					}
 				}
@@ -151,10 +150,10 @@ FString FAutoMixinEditorTool::ProcessTemplate(const FString& TemplateContent, FS
 	BlueprintPath += TEXT("_C");
 	const FString BlueprintClass = TEXT("UE") + BlueprintPath.Replace(TEXT("/"), TEXT("."));
 
-	const FString ROOT_PATH = TEXT("ROOT_PATH"); // 脚本根目录路径
-	const FString BLUEPRINT_PATH = TEXT("BLUEPRINT_PATH"); // 蓝图路径
-	const FString MIXIN_BLUEPRINT_TYPE = TEXT("MIXIN_BLUEPRINT_TYPE"); // 混入蓝图类型
-	const FString TS_NAME = TEXT("TS_NAME"); // TS文件名
+	const FString ROOT_PATH = TEXT("%ROOT_PATH%"); // 脚本根目录路径
+	const FString BLUEPRINT_PATH = TEXT("%BLUEPRINT_PATH%"); // 蓝图路径
+	const FString MIXIN_BLUEPRINT_TYPE = TEXT("%MIXIN_BLUEPRINT_TYPE%"); // 混入蓝图类型
+	const FString TS_NAME = TEXT("%TS_NAME%"); // TS文件名
 
 	Result = Result.Replace(*ROOT_PATH, *RootRelativePath); // 替换 脚本根目录路径
 	Result = Result.Replace(*BLUEPRINT_PATH, *BlueprintPath); // 替换 蓝图路径

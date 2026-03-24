@@ -1,17 +1,16 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "AutoMixin/AutoMixinStyle.h"
+#include "PuerTSToolStyle.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Styling/SlateStyleRegistry.h"
-#include "Slate/SlateGameResources.h"
 #include "Interfaces/IPluginManager.h"
 #include "Styling/SlateStyleMacros.h"
 
 #define RootToContentDir Style->RootToContentDir
 
-TSharedPtr<FSlateStyleSet> FAutoMixinStyle::StyleInstance = nullptr;
+TSharedPtr<FSlateStyleSet> FPuerTSToolStyle::StyleInstance = nullptr;
 
-void FAutoMixinStyle::Initialize()
+void FPuerTSToolStyle::Initialize()
 {
 	if (!StyleInstance.IsValid())
 	{
@@ -20,16 +19,16 @@ void FAutoMixinStyle::Initialize()
 	}
 }
 
-void FAutoMixinStyle::Shutdown()
+void FPuerTSToolStyle::Shutdown()
 {
 	FSlateStyleRegistry::UnRegisterSlateStyle(*StyleInstance);
 	ensure(StyleInstance.IsUnique());
 	StyleInstance.Reset();
 }
 
-FName FAutoMixinStyle::GetStyleSetName()
+FName FPuerTSToolStyle::GetStyleSetName()
 {
-	static FName StyleSetName(TEXT("AutoMixinStyle"));
+	static FName StyleSetName(TEXT("PuerTSToolStyle"));
 	return StyleSetName;
 }
 
@@ -37,16 +36,16 @@ FName FAutoMixinStyle::GetStyleSetName()
 const FVector2D Icon16x16(16.0f, 16.0f);
 const FVector2D Icon20x20(20.0f, 20.0f);
 
-TSharedRef< FSlateStyleSet > FAutoMixinStyle::Create()
+TSharedRef< FSlateStyleSet > FPuerTSToolStyle::Create()
 {
-	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("PuerTSAutoMixinStyle"));
+	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("PuerTSToolStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("PuerTSTool")->GetBaseDir() / TEXT("Resources"));
 
-	Style->Set("AutoMixin.PluginAction", new IMAGE_BRUSH_SVG(TEXT("PlaceholderButtonIcon"), Icon20x20));
+	Style->Set("PuerTSAutoMixinTool.PluginAction", new IMAGE_BRUSH_SVG(TEXT("PlaceholderButtonIcon"), Icon20x20));
 	return Style;
 }
 
-void FAutoMixinStyle::ReloadTextures()
+void FPuerTSToolStyle::ReloadTextures()
 {
 	if (FSlateApplication::IsInitialized())
 	{
@@ -54,7 +53,7 @@ void FAutoMixinStyle::ReloadTextures()
 	}
 }
 
-const ISlateStyle& FAutoMixinStyle::Get()
+const ISlateStyle& FPuerTSToolStyle::Get()
 {
 	return *StyleInstance;
 }

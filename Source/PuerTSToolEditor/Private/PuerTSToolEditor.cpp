@@ -2,16 +2,15 @@
 
 #include "PuerTSToolEditor.h"
 
-#include "AutoMixin/AutoMixinBPToolBar.h"
-#include "AutoMixin/AutoMixinStyle.h"
-#include "AutoMixin/AutoMixinCommands.h"
+#include "ISettingsModule.h"
+#include "PuerTSToolSettings.h"
 #include "AutoMixin/AutoMixinBPToolBar.h"
 #include "AutoMixin/AutoMixinCMToolBar.h"
+#include "PuerTSToolStyle.h"
+#include "PuerTSToolCommands.h"
+
 
 #define LOCTEXT_NAMESPACE "FPuerTSToolEditorModule"
-
-static const FString TYPE_SCRIPT_DIR = TEXT("TypeScript"); // TypeScript文件夹
-static const FString PUERTS_FRAMEWORK_PATH = TEXT("PuerTSTool/Typescript"); // Puerts资源路径
 
 
 
@@ -20,17 +19,19 @@ TSharedPtr<FSlateStyleSet> FPuerTSToolEditorModule::StyleSet = nullptr;
 
 void FPuerTSToolEditorModule::StartupModule()
 {
+
+	FPuerTSToolStyle::Initialize();
+	FPuerTSToolStyle::ReloadTextures();
+	FPuerTSToolCommands::Register();
+
+	RegisterSettings();
+	
 	DeployPuerTSFramework();
-	FAutoMixinStyle::Initialize();
-	FAutoMixinStyle::ReloadTextures();
-	FAutoMixinCommands::Register();
+	
+	FCoreDelegates::OnPostEngineInit.AddRaw(this,&FPuerTSToolEditorModule::OnPostEngineInit);
 	
 	AutoMixinBPToolBar = MakeShared<FAutoMixinBPToolBar>();
-	AutoMixinBPToolBar->Initialize();
-	
 	AutoMixinCMToolBar = MakeShared<FAutoMixinCMToolBar>();
-	AutoMixinCMToolBar->Initialize();
-	
 }
 
 
@@ -38,16 +39,18 @@ void FPuerTSToolEditorModule::StartupModule()
 
 void FPuerTSToolEditorModule::DeployPuerTSFramework() const
 {
+	const UPuerTSToolSettings* Settings = GetDefault<UPuerTSToolSettings>();
+	
 	// 插件内 TypeScript 框架目录
 	const FString SourceDir = FPaths::Combine(
 		FPaths::ProjectPluginsDir(),
-		PUERTS_FRAMEWORK_PATH
+		Settings->PuertsFrameworkPath
 	);
 
 	// 项目目录下 TypeScript
 	const FString TargetDir = FPaths::Combine(
 		FPaths::ProjectDir(),
-		TYPE_SCRIPT_DIR
+		Settings->TypeScriptDir
 	);
 
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -59,7 +62,7 @@ void FPuerTSToolEditorModule::DeployPuerTSFramework() const
 	}
 
 	// 2️ 递归复制目录
-	const bool bOverwrite = false; // 是否覆盖已有文件 //TODO:暴露给设置
+	const bool bOverwrite = Settings->bOverwriteAllTSFilesWhenDeploy; // 是否覆盖已有文件
 
 	bool bSuccess = PlatformFile.CopyDirectoryTree(
 		*TargetDir,
@@ -81,12 +84,57 @@ void FPuerTSToolEditorModule::DeployPuerTSFramework() const
 
 void FPuerTSToolEditorModule::ShutdownModule()
 {
-	FAutoMixinStyle::Shutdown();
+	UnregisterSettings();
 	
-	FAutoMixinCommands::Unregister();
+	FCoreDelegates::OnPostEngineInit.RemoveAll(this);
 	
 	AutoMixinBPToolBar->Uninitialize();
 	AutoMixinCMToolBar->Uninitialize();
+	
+	FPuerTSToolStyle::Shutdown();
+	FPuerTSToolCommands::Unregister();
+}
+
+void FPuerTSToolEditorModule::RegisterSettings()
+{
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		SettingsModule->RegisterSettings(
+			"Project", "Plugins", "PuerTSTool",
+			LOCTEXT("PuerTSToolSettingsName", "PuerTSTool"),
+			LOCTEXT("PuerTSToolSettingsDescription", "Configure PuerTSTool Plugin Settings"),
+			GetMutableDefault<UPuerTSToolSettings>()
+		);
+	}
+}
+
+void FPuerTSToolEditorModule::UnregisterSettings()
+{
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		SettingsModule->UnregisterSettings("Project", "Plugins", "PuerTSTool");
+	}
+}
+
+void FPuerTSToolEditorModule::OnPostEngineInit()
+{
+	if (!GEditor)
+	{
+		return;
+	}
+
+	// 引擎初始化完成后再初始化工具栏，此时可以安全加载 Kismet 模块
+	if (AutoMixinBPToolBar.IsValid())
+	{
+		AutoMixinBPToolBar->Initialize();
+	}
+	
+	if (AutoMixinCMToolBar.IsValid())
+	{
+		AutoMixinCMToolBar->Initialize();
+	}
+
+	
 }
 
 #undef LOCTEXT_NAMESPACE
