@@ -23,8 +23,8 @@
 		{
 			"Name": "PuerTSToolEditor",
 			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit"
-		},
+			"LoadingPhase": "Default"
+		}
 	],
 	"Plugins": [
 		{

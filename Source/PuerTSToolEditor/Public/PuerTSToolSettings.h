@@ -25,19 +25,27 @@ public:
     // 获取默认设置实例
     static const UPuerTSToolSettings* Get() { return GetDefault<UPuerTSToolSettings>(); }
 
-	/** 常量设置 */
+	//TODO: 不同的Cpp/蓝图类做对应模板
 	UPROPERTY(EditAnywhere, Config, Category = "TypeScript", meta = (DisplayName = "Template File Name"))
 	FString TemplateName;
 
-    
+	UPROPERTY(EditAnywhere, Config, Category = "TypeScript", meta = (DisplayName = "Template File Name"))
+	FString TemplateDir;
+	
+	//项目目录的TS文件夹
 	UPROPERTY(VisibleAnywhere, Config, Category = "TypeScript", meta = (DisplayName = "TypeScript Directory"))
 	FString TypeScriptDir;
 
+	//插件目录的TS文件夹(框架文件夹)
 	UPROPERTY(EditAnywhere, Config, Category = "TypeScript", meta = (DisplayName = "Puerts Framework Path"))
 	FString PuertsFrameworkPath;
 
-	UPROPERTY(EditAnywhere, Config, Category = "TypeScript", meta = (DisplayName = "Auto Import File Name"))
-	FString AutoImportName;
-
+	//import mixin的ts文件
+	UPROPERTY(VisibleAnywhere, Config, Category = "TypeScript", meta = (DisplayName = "Import Mixin File Name"))
+	FString ImportMixinFileName;
+	
+	UPROPERTY(EditAnywhere, Config, Category = "TypeScript", meta = (DisplayName = "Overwrite Files When Deploying PuerTS Framework"))
+	bool bOverwriteAllTSFilesWhenDeploy = false; 
+	
 
 };

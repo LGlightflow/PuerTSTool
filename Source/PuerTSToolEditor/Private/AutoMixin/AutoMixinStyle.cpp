@@ -3,7 +3,6 @@
 #include "AutoMixin/AutoMixinStyle.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Styling/SlateStyleRegistry.h"
-#include "Slate/SlateGameResources.h"
 #include "Interfaces/IPluginManager.h"
 #include "Styling/SlateStyleMacros.h"
 
@@ -29,7 +28,7 @@ void FAutoMixinStyle::Shutdown()
 
 FName FAutoMixinStyle::GetStyleSetName()
 {
-	static FName StyleSetName(TEXT("AutoMixinStyle"));
+	static FName StyleSetName(TEXT("PuerTSAutoMixinStyle"));
 	return StyleSetName;
 }
 
