@@ -1,6 +1,4 @@
 #include "AutoMixin/AutoMixinEditorTool.h"
-#include "PuerTSToolCommands.h"
-#include "PuerTSToolStyle.h"
 #include "Engine/Blueprint.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -12,7 +10,6 @@
 #include "PuerTSToolSettings.h"
 #include "Interfaces/IPluginManager.h"
 #include "Framework/Notifications/NotificationManager.h"
-#include "Styling/SlateStyleRegistry.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
 
@@ -68,9 +65,12 @@ void FAutoMixinEditorTool::GenerateTS(const UBlueprint * Blueprint)
 			TArray<FString> StringArray;
 			Rights.ParseIntoArray(StringArray,TEXT("/"), false);
 			const FString FileName = StringArray[StringArray.Num() - 1];
-
+			
+			const FString TemplateFileName = FindTemplateForBlueprint(Blueprint);
 			// 读取模板文件
-			const FString TemplatePath = FPaths::Combine(FPaths::ProjectPluginsDir(), Settings->PuertsFrameworkPath,Settings->TemplateDir, Settings->TemplateName);
+			const FString TemplatePath = FPaths::Combine(
+				IPluginManager::Get().FindPlugin("PuerTSTool")->GetBaseDir(), 
+				Settings->TemplateDir, TemplateFileName);
 			FString TemplateContent;
 			if (FFileHelper::LoadFileToString(TemplateContent, *TemplatePath))
 			{
@@ -109,9 +109,27 @@ void FAutoMixinEditorTool::GenerateTS(const UBlueprint * Blueprint)
 				{
 					// 显示通知
 					FNotificationInfo Info(FText::Format(LOCTEXT("TsFileGenerated", "TS文件生成成功->路径{0}"), FText::FromString(TsFilePath)));
-					Info.ExpireDuration = 5.f;
-					FSlateNotificationManager::Get().AddNotification(Info);
+					Info.ExpireDuration = 12.f;
+					
+					Info.Hyperlink = FSimpleDelegate::CreateLambda([TsFilePath]()
+					{
+						OpenCodeEditorForBpTS(TsFilePath);
+					});
 
+					// 👇 超链接显示文字
+					Info.HyperlinkText = LOCTEXT("Open TS File In Code Editor", "在代码编辑器中打开TypeScript文件");
+
+					
+					FSlateNotificationManager::Get().AddNotification(Info);
+					
+					OpenCodeEditorForBpTS(TsFilePath);
+					
+					// 生成Puerts类型定义
+					if (GEditor)
+					{
+						GEditor->Exec(nullptr, TEXT("Puerts.Gen"), *GLog);
+					}
+					
 					// 更新premixin文件
 					const FString ImportMixinTs = FPaths::Combine(FPaths::ProjectDir(), Settings->TypeScriptDir, Settings->ImportMixinFileName);
 					FString ImportMixinTsContent;
@@ -126,6 +144,7 @@ void FAutoMixinEditorTool::GenerateTS(const UBlueprint * Blueprint)
 							ImportMixinTsContent += ImportStatement + TEXT("\n");
 							FFileHelper::SaveStringToFile(ImportMixinTsContent, *ImportMixinTs, FFileHelper::EEncodingOptions::ForceUTF8);
 							UE_LOG(LogTemp, Log, TEXT("Premixin.ts更新成功"));
+
 						}
 					}
 				}
@@ -136,11 +155,14 @@ void FAutoMixinEditorTool::GenerateTS(const UBlueprint * Blueprint)
 				UE_LOG(LogTemp, Warning, TEXT("MixinTemplate.ts不存在"));
 			}
 		}
+		else
+		{
+			OpenCodeEditorForBpTS(TsFilePath);
+		}
 	}
 }
 
 
-//TODO: 改造这个
 // 处理模板
 FString FAutoMixinEditorTool::ProcessTemplate(const FString& TemplateContent, FString BlueprintPath, const FString& FileName, const FString& RootRelativePath)
 {
@@ -161,6 +183,124 @@ FString FAutoMixinEditorTool::ProcessTemplate(const FString& TemplateContent, FS
 	Result = Result.Replace(*TS_NAME, *FileName); // 替换 TS文件名
 
 	return Result;
+}
+
+FString FAutoMixinEditorTool::FindTemplateForBlueprint(const UBlueprint* Blueprint)
+{	
+	const UPuerTSToolSettings* Settings = GetDefault<UPuerTSToolSettings>();
+	if (!Blueprint) return Settings->DefaultTemplateName; // fallback
+
+	UClass* BPClass = Blueprint->GeneratedClass;
+	if (!BPClass) return Settings->DefaultTemplateName;
+
+	for (const FPuerTSTemplateMapping& Mapping : Settings->TemplateMappings)
+	{
+		UClass* BaseClass = Mapping.BaseClass.LoadSynchronous();
+		if (!BaseClass) continue;
+
+		if (BPClass->IsChildOf(BaseClass))
+		{
+			return Mapping.TemplateName;
+		}
+	}
+
+	// fallback 默认模板
+	return Settings->DefaultTemplateName;
+}
+
+void FAutoMixinEditorTool::OpenCodeEditorForBpTS(const FString& TsFilePath)
+{
+	const UPuerTSToolSettings* Settings = GetDefault<UPuerTSToolSettings>();
+	if (!Settings->bOpenCodeEditor)
+	{
+		return;
+	}
+	
+	if (TsFilePath.IsEmpty())
+	{
+		FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(TEXT("TsFilePath is empty")));
+		return;
+	}
+
+	if (!FPaths::FileExists(TsFilePath))
+	{
+		FMessageDialog::Open(EAppMsgType::Ok,
+			FText::Format(
+				FText::FromString(TEXT("TS file not found:\n{0}")),
+				FText::FromString(TsFilePath)
+			)
+		);
+		return;
+	}
+
+	
+	
+	const FString EditorCommand = Settings->GetCodeEditorCommand();
+	const EPuertsCodeEditorType EditorType = Settings->PuertsCodeEditorType;
+
+	FString ProcExecutable;
+	FString ProcArgs;
+
+	// -----------------------------
+	// VSCode / 类 VSCode 编辑器
+	// -----------------------------
+	if (EditorType == EPuertsCodeEditorType::VSCode)
+	{
+		const FString CmdArgs = FString::Printf(TEXT("-r -g \"%s:%d\""), *TsFilePath, 1);
+
+		if (EditorCommand.EndsWith(TEXT(".cmd")) || EditorCommand.EndsWith(TEXT(".bat")))
+		{
+			ProcExecutable = TEXT("cmd.exe");
+			ProcArgs = FString::Printf(TEXT("/c %s %s"), *EditorCommand, *CmdArgs);
+		}
+		else
+		{
+			ProcExecutable = EditorCommand;
+			ProcArgs = CmdArgs;
+		}
+	}
+	else
+	{
+		// 自定义编辑器（只传路径）
+		const FString CmdArgs = FString::Printf(TEXT("\"%s\""), *TsFilePath);
+
+		if (EditorCommand.EndsWith(TEXT(".cmd")) || EditorCommand.EndsWith(TEXT(".bat")))
+		{
+			ProcExecutable = TEXT("cmd.exe");
+			ProcArgs = FString::Printf(TEXT("/c %s %s"), *EditorCommand, *CmdArgs);
+		}
+		else
+		{
+			ProcExecutable = EditorCommand;
+			ProcArgs = CmdArgs;
+		}
+	}
+
+	// -----------------------------
+	// 启动进程
+	// -----------------------------
+	FProcHandle Handle = FPlatformProcess::CreateProc(
+		*ProcExecutable,
+		*ProcArgs,
+		true,
+		false,
+		false,
+		nullptr,
+		0,
+		nullptr,
+		nullptr
+	);
+
+	if (!Handle.IsValid())
+	{
+		FMessageDialog::Open(
+			EAppMsgType::Ok,
+			FText::Format(
+				FText::FromString(TEXT("Failed to launch editor:\n{0}")),
+				FText::FromString(EditorCommand)
+			)
+		);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

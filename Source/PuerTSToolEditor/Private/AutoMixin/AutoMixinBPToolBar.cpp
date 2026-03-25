@@ -77,7 +77,7 @@ void FAutoMixinBPToolBar::RegisterButton()
 				NAME_None, // 没有命令名
 				LOCTEXT("GenerateTemplate", "创建TS文件"), // 按钮显示文本
 				LOCTEXT("GenerateTemplateTooltip", "从模板生成TypeScript文件"), // 按钮提示文本
-				FSlateIcon( FPuerTSToolStyle::GetStyleSetName(), "AutoMixinIcon") // 按钮图标（这里使用空图标）
+				FSlateIcon( FPuerTSToolStyle::GetStyleSetName(), "PuerTSAutoMixinTool.PluginAction") // 按钮图标
 			);
 		})
 	);
