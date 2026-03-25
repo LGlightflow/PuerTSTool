@@ -6,8 +6,8 @@
 #include "PuerTSToolSettings.h"
 #include "AutoMixin/AutoMixinBPToolBar.h"
 #include "AutoMixin/AutoMixinCMToolBar.h"
-#include "AutoMixin/AutoMixinStyle.h"
-#include "AutoMixin/AutoMixinCommands.h"
+#include "PuerTSToolStyle.h"
+#include "PuerTSToolCommands.h"
 
 
 #define LOCTEXT_NAMESPACE "FPuerTSToolEditorModule"
@@ -19,10 +19,10 @@ TSharedPtr<FSlateStyleSet> FPuerTSToolEditorModule::StyleSet = nullptr;
 
 void FPuerTSToolEditorModule::StartupModule()
 {
-	
-	FAutoMixinStyle::Initialize();
-	FAutoMixinStyle::ReloadTextures();
-	FAutoMixinCommands::Register();
+
+	FPuerTSToolStyle::Initialize();
+	FPuerTSToolStyle::ReloadTextures();
+	FPuerTSToolCommands::Register();
 
 	RegisterSettings();
 	
@@ -91,8 +91,8 @@ void FPuerTSToolEditorModule::ShutdownModule()
 	AutoMixinBPToolBar->Uninitialize();
 	AutoMixinCMToolBar->Uninitialize();
 	
-	FAutoMixinStyle::Shutdown();
-	FAutoMixinCommands::Unregister();
+	FPuerTSToolStyle::Shutdown();
+	FPuerTSToolCommands::Unregister();
 }
 
 void FPuerTSToolEditorModule::RegisterSettings()

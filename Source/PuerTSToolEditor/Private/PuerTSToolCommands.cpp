@@ -1,10 +1,10 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "AutoMixin/AutoMixinCommands.h"
+#include "PuerTSToolCommands.h"
 
 #define LOCTEXT_NAMESPACE "FPuerTSToolEditorModule"
 
-void FAutoMixinCommands::RegisterCommands()
+void FPuerTSToolCommands::RegisterCommands()
 {
 	UI_COMMAND(PluginAction, "AutoMixin", "Execute AutoMixin action", EUserInterfaceActionType::Button, FInputChord());
 }

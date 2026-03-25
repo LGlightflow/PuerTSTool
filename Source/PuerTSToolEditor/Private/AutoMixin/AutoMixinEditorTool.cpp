@@ -1,6 +1,6 @@
 #include "AutoMixin/AutoMixinEditorTool.h"
-#include "AutoMixin/AutoMixinCommands.h"
-#include "AutoMixin/AutoMixinStyle.h"
+#include "PuerTSToolCommands.h"
+#include "PuerTSToolStyle.h"
 #include "Engine/Blueprint.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -34,6 +34,8 @@ void FAutoMixinEditorTool::Uninitialize()
 void FAutoMixinEditorTool::BindCommands()
 {
 }
+
+
 
 void FAutoMixinEditorTool::GenerateTS(const UBlueprint * Blueprint)
 {
@@ -123,7 +125,7 @@ void FAutoMixinEditorTool::GenerateTS(const UBlueprint * Blueprint)
 						{
 							ImportMixinTsContent += ImportStatement + TEXT("\n");
 							FFileHelper::SaveStringToFile(ImportMixinTsContent, *ImportMixinTs, FFileHelper::EEncodingOptions::ForceUTF8);
-							UE_LOG(LogTemp, Log, TEXT("AutoImport.ts更新成功"));
+							UE_LOG(LogTemp, Log, TEXT("Premixin.ts更新成功"));
 						}
 					}
 				}
