@@ -8,6 +8,7 @@
 #include "AutoMixin/AutoMixinCMToolBar.h"
 #include "PuerTSToolStyle.h"
 #include "PuerTSToolCommands.h"
+#include "Interfaces/IPluginManager.h"
 
 
 #define LOCTEXT_NAMESPACE "FPuerTSToolEditorModule"
@@ -42,15 +43,15 @@ void FPuerTSToolEditorModule::DeployPuerTSFramework() const
 	const UPuerTSToolSettings* Settings = GetDefault<UPuerTSToolSettings>();
 	
 	// 插件内 TypeScript 框架目录
-	const FString SourceDir = FPaths::Combine(
-		FPaths::ProjectPluginsDir(),
-		Settings->PuertsFrameworkPath
-	);
+	const FString SourceDir = IPluginManager::Get()
+	.FindPlugin("PuerTSTool")
+	->GetBaseDir() / Settings->TypeScriptDir;
 
-	// 项目目录下 TypeScript
+	// 项目目录下 TypeScript	部署位置
+	//原本是 FString TargetDir = FPaths::Combine(FPaths::ProjectDir(),Settings->TypeScriptDir);
+	//因为需要进行白名单过滤所以更改
 	const FString TargetDir = FPaths::Combine(
-		FPaths::ProjectDir(),
-		Settings->TypeScriptDir
+		FPaths::ProjectDir()
 	);
 
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -61,23 +62,71 @@ void FPuerTSToolEditorModule::DeployPuerTSFramework() const
 		PlatformFile.CreateDirectoryTree(*TargetDir);
 	}
 
-	// 2️ 递归复制目录
-	const bool bOverwrite = Settings->bOverwriteAllTSFilesWhenDeploy; // 是否覆盖已有文件
+	TArray<FString> IgnoreList = Settings->DoNotOverwritePaths;
 
-	bool bSuccess = PlatformFile.CopyDirectoryTree(
-		*TargetDir,
-		*SourceDir,
-		bOverwrite
-	);
+	// 遍历源目录
+	TArray<FString> Files;
+	IFileManager::Get().FindFilesRecursive(Files, *SourceDir, TEXT("*.*"), true, false);
 
-	if (bSuccess)
+	for (const FString& SrcFile : Files)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Deploy PuerTS Framework Success:\n%s -> %s"), *SourceDir, *TargetDir);
+		// 转换为相对路径
+		FString RelativePath = SrcFile;
+		FPaths::MakePathRelativeTo(RelativePath, *SourceDir);
+
+		const FString DestFile = FPaths::Combine(TargetDir, RelativePath);
+		
+		FString NormalizedPath = RelativePath;
+		FPaths::NormalizeFilename(NormalizedPath);
+		
+		// 判断是否在忽略列表
+		bool bSkip = false;
+		for (FString Ignore : IgnoreList)
+		{
+			FPaths::NormalizeFilename(Ignore);
+
+			// 目录匹配（以 / 结尾 或 不含 .）
+			bool bIsDir = Ignore.EndsWith("/") || !Ignore.Contains(".");
+
+			if (bIsDir)
+			{
+				// 确保是完整目录匹配
+				if (NormalizedPath.StartsWith(Ignore))
+				{
+					bSkip = true;
+					break;
+				}
+			}
+			else
+			{
+				// 文件名匹配
+				FString FileName = FPaths::GetCleanFilename(NormalizedPath);
+
+				if (FileName.Equals(Ignore))
+				{
+					bSkip = true;
+					break;
+				}
+			}
+		}
+
+		if (bSkip)
+		{
+			continue;
+		}
+
+		// 创建目录
+		FString DestDir = FPaths::GetPath(DestFile);
+		if (!PlatformFile.DirectoryExists(*DestDir))
+		{
+			PlatformFile.CreateDirectoryTree(*DestDir);
+		}
+
+		// 覆盖复制
+		PlatformFile.CopyFile(*DestFile, *SrcFile);
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Deploy PuerTS Framework Failed:\n%s -> %s"), *SourceDir, *TargetDir);
-	}
+
+	UE_LOG(LogTemp, Log, TEXT("Deploy PuerTS Framework Done (with ignore rules)"));
 }
 
 

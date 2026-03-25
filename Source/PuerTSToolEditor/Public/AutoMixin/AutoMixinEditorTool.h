@@ -22,7 +22,10 @@ public:
 
 	/** 处理模板内容，替换占位符 */
 	static FString ProcessTemplate(const FString &TemplateContent, FString BlueprintPath, const FString &FileName, const FString &RootRelativePath);
-
+	
+	static FString FindTemplateForBlueprint(const UBlueprint* Blueprint);
+	
+	static void OpenCodeEditorForBpTS(const FString& TsFilePath);
 protected:
 
 	/** 绑定命令（命令到执行代理） */

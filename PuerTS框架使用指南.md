@@ -9,7 +9,7 @@
 
 * C#（UnrealSharp,UnrealCSharp）：C#是最想去使用的方案，因为考虑到很多团队和开发人员是从Unity转UE的（或者反复横跳），使用此方案能减少很多切换成本；可惜当前的开源方案都是玩具级别的，完全没有案例；
 
-* TypeScript：Typescript是强类型语言，对比Lua而言多了编译期类型校验，可以减少很多不必要的语法错误，而且编辑器可以根据类型分析提供大量代码提示，并且C#和TypeScript由同一人操刀，对于C#使用者切换成本较低；可惜的是相关案例比较少（鸣潮能不能再透露下你是怎么做的/(ㄒoㄒ)/），而且TS相关使用人员集中在前端领域；当然，在当前AI时代，TypeScript有着巨大优势，这也是考虑到使用TS的原因之一。
+* TypeScript：Typescript是强类型语言，对比Lua而言多了编译期类型校验，可以减少很多不必要的语法错误，而且编辑器可以根据类型分析提供大量代码提示，并且C#和TypeScript由同一人操刀，对于C#使用者切换成本较低；可惜的是相关案例比较少，而且TS相关使用人员集中在前端领域；当然，在当前AI时代，TypeScript有着巨大优势，这也是考虑到使用TS的原因之一。
 
 * AngelScript：感觉是简化版的C++,不过AS貌似只用在游戏开发上，对于想~~转行跑路~~扩充技术栈的同学有点不利...
 
@@ -39,7 +39,7 @@ PuerTS辅助插件PuerTSTool:
 
 进入到Puerts目录执行
 ```sh
-node enable_puerts_module.js'
+node enable_puerts_module.js
 ```
 
 
@@ -128,58 +128,13 @@ tsc -p tsconfig.json
 
 
 
-### 4.TypeScript附带框架 ue写法
-***还是做示例工程吧，有点难描述......***
-<details> <summary>框架内容</summary>
+### 4.TypeScript附带框架 and PuerTSTool
+PuerTSTool扩展了一些常用功能，支持：
 
-```
-│  G_App.ts
-│  PreMixin.ts
-│  QuickStart.ts
-│
-├─Blueprints
-├─Define
-│      EventDefine.ts
-│
-├─Framework
-│  │  不要修改此文件夹的代码.md
-│  │
-│  ├─Assets
-│  │      AssetsManager.ts
-│  │
-│  ├─Interface
-│  │      IDestroyable.ts
-│  │      IModule.ts
-│  │      IPoolObject.ts
-│  │      ISingleton.ts
-│  │      IUICtrl.ts
-│  │
-│  ├─Misc
-│  │      Misc.ts
-│  │      StringTools.ts
-│  │
-│  ├─Module
-│  │      ModuleBase.ts
-│  │      ModuleManager.ts
-│  │
-│  ├─UI
-│  │      UIBase.ts
-│  │      UIManager.ts
-│  │
-│  └─Utils
-│          EventDefineBase.ts
-│          EventDispatcher.ts
-│          mixin.ts
-│
-├─Module
-│  └─Test
-│          TestModule.ts
-│
-└─UI
-```
+* 打开引擎自动部署TypeScript代码到项目根目录
+* 右键或在蓝图编辑器点击生成TS脚本，自动生成对应TypeScirpt文件，并自动往PreMixin.ts添加import
+* 生成TypeScirpt文件后或已经生成再次点击上述按钮，可打开代码编辑器
 
-#### Framework
-核心框架，非必要不修改,晚点会给出详细解析
 
 
 #### QuickStart.ts
@@ -192,7 +147,7 @@ import "./Blueprints/BP_PlayerController";
 ```
 
 #### G_App.ts
-初始化模块中，填入Module文件夹中的对应Module，Module的写法可以参考TestModule.ts
+初始化模块函数中，填入Module文件夹中的对应Module，Module的写法可以参考TestModule.ts
 ```ts
     //初始化模块
     private InitModule(): void {
@@ -306,6 +261,10 @@ launch.json生成如下,注意端口号要匹配且不能被其他进程占用:
 可以开启wait debugger，如果开启，则卡住进程来等待调试器连接。适合调试游戏开始前/开始时的逻辑。
 ![](./Resources/vscdbg_5.png)
 
+#### 附:Rider 配合使用
+直接往项目添加现有文件夹，选择项目根目录的TypeScript文件夹即可
+![](./Resources/rider_ts1.png)
+可能会出现无法调试的情况，需要使用webstrom (暂未尝试)
 #### AI编程
 可以先用Copilot 免费量大管饱：
 
