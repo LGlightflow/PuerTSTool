@@ -28,7 +28,7 @@ struct FPuerTSTemplateMapping
 	FString TemplateName;
 };
 
-UCLASS(config = Editor, defaultconfig, meta = (DisplayName = "PuerTSTool"))
+UCLASS(config = PuerTSTool, defaultconfig, meta = (DisplayName = "PuerTSTool"))
 class PUERTSTOOLEDITOR_API UPuerTSToolSettings : public UObject
 {
     GENERATED_BODY()
