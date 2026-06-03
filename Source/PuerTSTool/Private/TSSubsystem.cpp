@@ -45,6 +45,9 @@ void UTSSubsystem::Deinitialize()
 	TArray<FTSEventData> eventData;
 	this->CallTSEvent(FName("DisposeTS"), eventData);
 	m_mapEvent.Empty();
+	
+	m_arrCacheClass.Empty();
+	m_arrCacheObejct.Empty();
 }
 
 bool UTSSubsystem::ShouldCreateSubsystem(UObject* Outer) const

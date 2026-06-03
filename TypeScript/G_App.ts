@@ -1,6 +1,7 @@
 import * as UE from 'ue';
 import { argv, releaseManualReleaseDelegate, toManualReleaseDelegate } from 'puerts';
 import Misc from './Framework/Misc/Misc';
+import AssetsManager from './Framework/Assets/AssetsManager';
 import ModuleManager from './Framework/Module/ModuleManager';
 import EventDispatcher from './Framework/Utils/EventDispatcher';
 import { ISingleton } from './Framework/Interface/ISingleton';
@@ -43,7 +44,8 @@ export class G_App extends EventDispatcher implements ISingleton<G_App> {
     public Destroy(): void {
         this.RemoveAllEventListeners();
         this.DisposeModule();
-
+        AssetsManager.getInstance().Destroy();
+        
         //释放TS函数,防止内存泄漏
         releaseManualReleaseDelegate(GlobalDispose);
         G_App.m_instance = null;
