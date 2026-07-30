@@ -57,6 +57,10 @@ void FAutoMixinEditorTool::GenerateTS(const UBlueprint* Blueprint)
 	{
 		AutoMixinUtils::EnsurePreMixinImport(PreMixinFilePath, PathInfo.ImportPath);
 		OpenCodeEditorForBpTS(PathInfo.TsFilePath);
+		if (GEditor)
+		{
+			GEditor->Exec(nullptr, TEXT("Puerts.Gen"), *GLog);
+		}
 		return;
 	}
 

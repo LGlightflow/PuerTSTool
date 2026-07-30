@@ -201,7 +201,7 @@ void FAutoMixinBPToolBar::RegisterButton()
 					// 没有 TS 时创建，有 TS 时直接打开。
 					MenuBuilder.AddMenuEntry(
 						LOCTEXT("CreateOrOpenTSFile", "创建/打开TS"),
-						LOCTEXT("CreateOrOpenTSFileTooltip", "创建或打开当前蓝图对应的TypeScript文件"),
+						LOCTEXT("CreateOrOpenTSFileTooltip", "创建或打开当前蓝图对应的TypeScript文件,会执行增量生成类型声明"),
 						FSlateIcon(FPuerTSToolStyle::GetStyleSetName(), "PuerTSAutoMixinTool.PluginAction"),
 						FUIAction(FExecuteAction::CreateLambda([this]()
 						{
