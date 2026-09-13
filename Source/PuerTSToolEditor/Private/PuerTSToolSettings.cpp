@@ -29,6 +29,8 @@ UPuerTSToolSettings::UPuerTSToolSettings()
 	
 	PuertsCodeEditorType = EPuertsCodeEditorType::VSCode;
 	bOpenCodeEditor = true;
+	bEnableVSCodeBridge = true;
+	VSCodeBridgePort = 18777;
 }
 
 FString UPuerTSToolSettings::GetCodeEditorCommand() const

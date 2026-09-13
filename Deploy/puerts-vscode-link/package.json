@@ -1,0 +1,55 @@
+{
+    "name": "puerts-tool-vscode-link",
+    "displayName": "PuerTS Tool Link",
+    "description": "Open Unreal Blueprint assets from PuerTS AssetPath constants.",
+    "version": "0.1.0",
+    "publisher": "puerts-tool",
+    "engines": {
+        "vscode": "^1.90.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onLanguage:typescript",
+        "onCommand:puertsTool.openBlueprint",
+        "onCommand:puertsTool.revealBlueprint"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "puertsTool.openBlueprint",
+                "title": "PuerTS: Open Blueprint"
+            },
+            {
+                "command": "puertsTool.revealBlueprint",
+                "title": "PuerTS: Reveal Blueprint In Content Browser"
+            }
+        ],
+        "configuration": {
+            "title": "PuerTS Tool",
+            "properties": {
+                "puertsTool.bridgeHost": {
+                    "type": "string",
+                    "default": "127.0.0.1",
+                    "description": "Host of the PuerTSTool editor TCP bridge."
+                },
+                "puertsTool.bridgePort": {
+                    "type": "number",
+                    "default": 18777,
+                    "description": "Port of the PuerTSTool editor TCP bridge."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "compile": "tsc -p .",
+        "watch": "tsc -watch -p ."
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "@types/vscode": "^1.90.0",
+        "typescript": "^5.5.4"
+    }
+}

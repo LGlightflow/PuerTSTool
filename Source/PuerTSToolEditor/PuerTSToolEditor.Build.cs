@@ -42,6 +42,10 @@ public class PuerTSToolEditor : ModuleRules
 				"Projects",
 				"DeclarationGenerator",
 				"PuerTSTool",	
+				"Sockets",
+				"Networking",
+				"Json",
+				"JsonUtilities",
 				// 生成TS模板用到的模块，可以的话尽量不添加模块，在设置配置就好
 				"UMG", 
 				

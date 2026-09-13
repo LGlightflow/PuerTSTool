@@ -6,6 +6,7 @@
 #include "PuerTSToolSettings.h"
 #include "AutoMixin/AutoMixinBPToolBar.h"
 #include "AutoMixin/AutoMixinCMToolBar.h"
+#include "Bridge/PuerTSBridgeServer.h"
 #include "PuerTSToolStyle.h"
 #include "PuerTSToolCommands.h"
 #include "Interfaces/IPluginManager.h"
@@ -17,6 +18,9 @@
 
 
 TSharedPtr<FSlateStyleSet> FPuerTSToolEditorModule::StyleSet = nullptr;
+
+
+FPuerTSToolEditorModule::~FPuerTSToolEditorModule() = default;
 
 
 void FPuerTSToolEditorModule::StartupModule()
@@ -134,6 +138,12 @@ void FPuerTSToolEditorModule::DeployPuerTSFramework() const
 
 void FPuerTSToolEditorModule::ShutdownModule()
 {
+	if (BridgeServer)
+	{
+		BridgeServer->Stop();
+		BridgeServer.Reset();
+	}
+	
 	UnregisterSettings();
 	
 	FCoreDelegates::OnPostEngineInit.RemoveAll(this);
@@ -184,7 +194,12 @@ void FPuerTSToolEditorModule::OnPostEngineInit()
 		AutoMixinCMToolBar->Initialize();
 	}
 
-	
+	const UPuerTSToolSettings* Settings = GetDefault<UPuerTSToolSettings>();
+	if (Settings->bEnableVSCodeBridge)
+	{
+		BridgeServer = MakeUnique<FPuerTSBridgeServer>();
+		BridgeServer->Start(Settings->VSCodeBridgePort);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

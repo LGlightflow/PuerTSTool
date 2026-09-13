@@ -74,6 +74,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, config,Category = "PuerTSTool|CodeEditor",meta = (EditCondition = "PuertsCodeEditorType == EPuertsCodeEditorType::Custom", DisplayName ="Custom Code Editor Executable Path"))
 	FString CustomEditorExecutable;
+
+	UPROPERTY(EditAnywhere, Config, Category = "PuerTSTool|VSCode Bridge", meta = (DisplayName = "Enable VSCode Bridge"))
+	bool bEnableVSCodeBridge = true;
+
+	UPROPERTY(EditAnywhere, Config, Category = "PuerTSTool|VSCode Bridge", meta = (DisplayName = "Bridge Port", ClampMin = "1", ClampMax = "65535"))
+	int32 VSCodeBridgePort = 18777;
 	
 	/*//相对于插件目录的TS文件夹(框架文件夹)
 	UPROPERTY(EditAnywhere, Config, Category = "TypeScript", meta = (DisplayName = "Puerts Framework Path"))

@@ -7,9 +7,12 @@
 #include "AutoMixin/AutoMixinCMToolBar.h"
 #include "Modules/ModuleManager.h"
 
+class FPuerTSBridgeServer;
+
 class FPuerTSToolEditorModule : public IModuleInterface
 {
 public:
+	virtual ~FPuerTSToolEditorModule() override;
 
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
@@ -27,6 +30,7 @@ private:
 	
 	TSharedPtr<FAutoMixinBPToolBar> AutoMixinBPToolBar;
 	TSharedPtr<FAutoMixinCMToolBar> AutoMixinCMToolBar;
+	TUniquePtr<FPuerTSBridgeServer> BridgeServer;
 	// 样式
 	static TSharedPtr<FSlateStyleSet> StyleSet;
 	
